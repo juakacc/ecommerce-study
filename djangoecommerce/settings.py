@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'widget_tweaks',
+
     'core',
     'catalog',
 ]
@@ -66,7 +68,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                
+
                 'catalog.context_processors.categories',
             ],
         },
@@ -129,3 +131,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # STATICFILES_DIRS = [
 #     os.path.join(BASE_DIR, 'staticfiles')
 # ]
+
+# Teste de envio de e-mails
+DEFAULT_FROM_EMAIL = 'juakacc@gmail.com'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
