@@ -41,6 +41,7 @@ INSTALLED_APPS = [
 
     'widget_tweaks',
 
+    'accounts',
     'core',
     'catalog',
 ]
@@ -135,3 +136,13 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # Teste de envio de e-mails
 DEFAULT_FROM_EMAIL = 'juakacc@gmail.com'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# auth
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'index'
+LOGOUT_URL = 'logout'
+AUTH_USER_MODEL = 'accounts.User'
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'accounts.backends.ModelBackend',
+)
