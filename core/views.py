@@ -3,6 +3,7 @@ from django.http import HttpResponse
 from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
 from django.contrib.auth import get_user_model
+from django.contrib import messages
 from django.views.generic import TemplateView, CreateView
 from .forms import ContactForm
 
@@ -19,10 +20,11 @@ def contact(request):
 
     if form.is_valid():
         form.send_email()
-        success = True
+        messages.success(request, 'Obrigado pelo contato')
+    elif request.method == 'post':
+        messages.error(request, 'Formulário inválido')
     context = {
         'form': form,
-        'success': success,
     }
     return render(request, 'contact.html', context)
 
