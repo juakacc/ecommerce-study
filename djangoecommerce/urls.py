@@ -27,5 +27,6 @@ urlpatterns = [
     path('sair/', logout, {'next_page': 'index'}, name='logout'),
     path('catalogo/', include('catalog.urls')),
     path('compras/', include('checkout.urls')),
+    path('paypal/', include('paypal.standard.ipn.urls')),
     path('admin/', admin.site.urls),
 ]

@@ -1,6 +1,7 @@
 from django.db import models
 from catalog.models import Product
 from django.conf import settings
+from pagseguro import PagSeguro
 
 class CartItemManager(models.Manager):
 
@@ -75,6 +76,74 @@ class Order(models.Model):
 
     def __str__(self):
         return 'Pedido #{}'.format(self.pk)
+
+    def products(self):
+        # ids de todos os produtos desse pedido
+        products_ids = self.itens.values_list('product')
+        # retorna os produtos com os ids
+        return Product.objects.filter(pk__in=products_ids)
+
+    def total(self):
+        aggregate_queryset = self.itens.aggregate(
+            total=models.Sum(
+            models.F('price') * models.F('quantity'),
+            output_field=models.DecimalField())
+        )
+        return aggregate_queryset['total']
+
+    def complete(self):
+        self.status = 1
+        self.save()
+
+    def pagseguro(self):
+        self.payment_option = 'pagseguro'
+        self.save()
+        pg = PagSeguro(
+            email=settings.PAGSEGURO_EMAIL, token=settings.PAGSEGURO_TOKEN,
+            config={'sandbox': settings.PAGSEGURO_SANDBOX}
+        )
+        pg.sender = {
+            'email': self.user.email
+        }
+        pg.reference_prefix = None
+        pg.shipping = None
+        pg.reference = self.pk
+        for item in self.itens.all():
+            pg.items.append(
+                {
+                    'id': item.product.pk,
+                    'description': item.product.name,
+                    'quantity': item.quantity,
+                    'amount': '%.2f' % item.price
+                }
+            )
+        return pg
+
+    def paypal(self):
+        self.payment_option = 'paypal'
+        self.save()
+        paypal_dict = {
+            'upload': '1',
+            'business': settings.PAYPAL_EMAIL,
+            'invoice': self.pk,
+            'cmd': '_cart',
+            'currency_code': 'BRL',
+            'charset': 'utf-8',
+        }
+        index = 1
+        for item in self.itens.all():
+            paypal_dict['amount_{}'.format(index)] = '%.2f' % item.price
+            paypal_dict['item_name_{}'.format(index)] = item.product.name
+            paypal_dict['quantity_{}'.format(index)] = item.quantity
+            index = index + 1
+        return paypal_dict
+
+    def pagseguro_update_status(self, status):
+        if status == '3':
+            self.status = 1
+        elif status == '7':
+            self.status = 2
+        self.save()
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, verbose_name='Pedido', related_name='itens', on_delete=models.CASCADE)
