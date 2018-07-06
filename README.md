@@ -1,0 +1,2 @@
+# ecommerce-study
+Learning Django
